@@ -1,18 +1,3 @@
-"""
-map_view.py - יצירת מפה אינטראקטיבית
-צוות 1, זוג B
-
-ראו docs/api_contract.md לפורמט הקלט והפלט.
-
-=== תיקונים ===
-1. חישוב מרכז המפה - היה עובר על images_data (כולל תמונות בלי GPS) במקום gps_image, נופל עם None
-2. הסרת CustomIcon שלא עובד (filename זה לא נתיב שהדפדפן מכיר)
-3. הסרת m.save() - לפי API contract צריך להחזיר HTML string, לא לשמור קובץ
-4. הסרת fake_data מגוף הקובץ - הועבר ל-if __name__
-5. תיקון color_index - היה מתקדם על כל תמונה במקום רק על מכשיר חדש
-6. הוספת מקרא מכשירים
-"""
-
 import folium
 
 
@@ -20,31 +5,44 @@ def sort_by_time(arr):
     pass
 
 
+colors = ['darkgreen', 'beige', 'lightgreen', 'black', 'purple', 'darkpurple',
+          'lightblue', 'orange', 'pink', 'blue', 'darkblue', 'gray', 'red', 'green']
+color_devices = {}
+
+def color_icon(model):
+    if model not in color_devices:
+        c = colors.pop()
+        color_devices[model] = c
+    icon = color_devices[model]
+    return icon
+
 def create_map(images_data):
-    """
-    יוצר מפה אינטראקטיבית עם כל המיקומים.
+    images_gps = list(filter(lambda dicti: dicti["has_gps"] ,images_data))
+    if not images_gps:
+        return "<h2>No GPS data found</h2>"
+    # base map
+    m = folium.Map(location=[31.5, 34.75], zoom_start=9)
 
-    Args:
-        images_data: רשימת מילונים מ-extract_all
+    list_coord = []
+    # creates markers and adds them on the map
+    for dicti in images_gps:
+        folium.Marker(
+            location=[dicti["latitude"], dicti["longitude"]],
+            tooltip="Click here for more information",
+            popup=f"{dicti['filename']}<br>{dicti['datetime']}<br>{dicti['camera_model']}",
+            icon=folium.Icon(color=color_icon(dicti["camera_model"]))
+        ).add_to(m)
+        # creates list with all points
+        list_coord.append([dicti["latitude"], dicti["longitude"]])
 
-    Returns:
-        string של HTML (המפה)
-    """
-    pass
+    # creates line between locations
+    coord_lines = [[list_coord[i],list_coord[i+1]] for i in range(len(list_coord)-1)]
+    for line in coord_lines:
+        folium.PolyLine(
+            line,
+            color= 'blue',
+            weight= '4',
+            opacity= '0.8'
+        ).add_to(m)
 
-
-
-if __name__ == "__main__":
-    # תיקון: fake_data הועבר לכאן מגוף הקובץ - כדי שלא ירוץ בכל import
-    fake_data = [
-        {"filename": "test1.jpg", "latitude": 32.0853, "longitude": 34.7818,
-         "has_gps": True, "camera_make": "Samsung", "camera_model": "Galaxy S23",
-         "datetime": "2025-01-12 08:30:00"},
-        {"filename": "test2.jpg", "latitude": 31.7683, "longitude": 35.2137,
-         "has_gps": True, "camera_make": "Apple", "camera_model": "iPhone 15 Pro",
-         "datetime": "2025-01-13 09:00:00"},
-    ]
-    html = create_map(fake_data)
-    with open("test_map.html", "w", encoding="utf-8") as f:
-        f.write(html)
-    print("Map saved to test_map.html")
+    return m._repr_html_()
