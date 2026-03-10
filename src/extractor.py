@@ -110,3 +110,5 @@ def extract_all(folder_path):
         exif_dict=extract_metadata(file)
         list_of_dicts.append(exif_dict)
     return list_of_dicts
+
+
