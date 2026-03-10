@@ -52,15 +52,18 @@ def datatime(data: dict):
         return str(data["DateTimeDigitized"])
     return None
 
+
 def camera_make(data: dict):
     if "Make" in data:
         return str(data["Make"])
     return None
 
+
 def camera_model(data: dict):
     if "Model" in data:
         return str(data["Model"])
     return None
+
 
 def extract_metadata(image_path):
     path = Path(image_path)
@@ -87,6 +90,7 @@ def extract_metadata(image_path):
         tag = TAGS.get(tag_id, tag_id)
         data[tag] = value
 
+
     exif_dict = {
         "filename": path.name,
         "datetime": datatime(data),
@@ -106,4 +110,3 @@ def extract_all(folder_path):
         exif_dict=extract_metadata(file)
         list_of_dicts.append(exif_dict)
     return list_of_dicts
-
