@@ -17,7 +17,7 @@ def color_by_model(model):
     return color_icon
 
 def create_map(images_data):
-    images_gps = list(filter(lambda dicti: dicti["has_gps"] ,images_data))
+    images_gps = filter(lambda d: d["has_gps"] and d["latitude"] is not None and d["longitude"] is not None,images_data)
     if not images_gps:
         return "<h2>No GPS data found</h2>"
     # base map
