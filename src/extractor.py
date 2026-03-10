@@ -3,52 +3,71 @@ from PIL.ExifTags import TAGS
 from pathlib import Path
 import os
 
-"""
-extractor.py - שליפת EXIF מתמונות
-צוות 1, זוג A
-
-ראו docs/api_contract.md לפורמט המדויק של הפלט.
-
-"""
-
 
 def has_gps(data: dict):
-    pass
+    if "GPSInfo" in data:
+        return True
+    return False
 
 
 def latitude(data: dict):
-    pass
+    if "GPSInfo" not in data:
+        return None
+    gps_info = data["GPSInfo"]
+    if 2 not in gps_info or 1 not in gps_info:
+        return None
+    value=gps_info[2]
+    ref=gps_info[1]
+    if all(v == v for v in value):
+        d=float(value[0])
+        m=float(value[1])
+        s=float(value[2])
+        lat = d + (m / 60.0) + (s / 3600.0)
+        return -lat if ref == "S" else lat
+    return None
 
 
 def longitude(data: dict):
-    pass
+    if "GPSInfo" not in data:
+        return None
+    gps_info = data["GPSInfo"]
+    if 4 not in gps_info or 3 not in gps_info:
+        return None
+    value=gps_info[4]
+    ref=gps_info[3]
+    if all(v == v for v in value):
+        d=float(value[0])
+        m=float(value[1])
+        s=float(value[2])
+        lon = d + (m / 60.0) + (s / 3600.0)
+        return -lon if ref == "W" else lon
+    return None
 
 def datatime(data: dict):
-    pass
+    if "DateTime" in data:
+        return str(data["DateTime"])
+    elif  "DateTimeOriginal" in data:
+        return str(data["DateTimeOriginal"])
+    elif  "DateTimeDigitized" in data:
+        return str(data["DateTimeDigitized"])
+    return None
 
 
 def camera_make(data: dict):
-    pass
+    if "Make" in data:
+        return str(data["Make"])
+    return None
 
 
 def camera_model(data: dict):
-    pass
+    if "Model" in data:
+        return str(data["Model"])
+    return None
 
 
 def extract_metadata(image_path):
-    """
-    שולף EXIF מתמונה בודדת.
-
-    Args:
-        image_path: נתיב לקובץ תמונה
-
-    Returns:
-        dict עם: filename, datetime, latitude, longitude,
-              camera_make, camera_model, has_gps
-    """
     path = Path(image_path)
 
-    # תיקון: טיפול בתמונה בלי EXIF - בלי זה, exif.items() נופל עם AttributeError
     try:
         img = Image.open(image_path)
         exif = img._getexif()
@@ -71,7 +90,6 @@ def extract_metadata(image_path):
         tag = TAGS.get(tag_id, tag_id)
         data[tag] = value
 
-    # תיקון: הוסר print(data) שהיה כאן - הדפיס את כל ה-EXIF הגולמי על כל תמונה
 
     exif_dict = {
         "filename": path.name,
@@ -86,13 +104,11 @@ def extract_metadata(image_path):
 
 
 def extract_all(folder_path):
-    """
-    שולף EXIF מכל התמונות בתיקייה.
+    list_of_dicts=[]
+    path=Path(folder_path)
+    for file in path.iterdir():
+        exif_dict=extract_metadata(file)
+        list_of_dicts.append(exif_dict)
+    return list_of_dicts
 
-    Args:
-        folder_path: נתיב לתיקייה
 
-    Returns:
-        list של dicts (כמו extract_metadata)
-    """
-    pass
