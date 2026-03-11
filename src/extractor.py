@@ -55,13 +55,13 @@ def datatime(data: dict):
 
 def camera_make(data: dict):
     if "Make" in data:
-        return str(data["Make"])
+        return str(data["Make"].rstrip('\x00'))
     return None
 
 
 def camera_model(data: dict):
     if "Model" in data:
-        return str(data["Model"])
+        return str(data["Model"].rstrip('\x00'))
     return None
 
 
