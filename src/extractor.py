@@ -11,28 +11,36 @@ def has_gps(data: dict):
 
 
 def latitude(data: dict):
-    if "GPSInfo" in data:
-        value=data["GPSInfo"]
-        list_of_keys=[k for k,v in value.items()]
-        if list_of_keys[0]!= "1" or list_of_keys[1]!= "2" or list_of_keys[2]!= "3" or list_of_keys[3]!= "4":
-            return None
-        d=float(value[2][0])
-        m=float(value[2][1])
-        s=float(value[2][2])
-        return d + (m / 60.0) + (s / 3600.0)
+    if "GPSInfo" not in data:
+        return None
+    gps_info = data["GPSInfo"]
+    if 2 not in gps_info or 1 not in gps_info:
+        return None
+    value=gps_info[2]
+    ref=gps_info[1]
+    if all(v == v for v in value):
+        d=float(value[0])
+        m=float(value[1])
+        s=float(value[2])
+        lat = d + (m / 60.0) + (s / 3600.0)
+        return -lat if ref == "S" else lat
     return None
 
 
 def longitude(data: dict):
-    if "GPSInfo" in data:
-        value=data["GPSInfo"]
-        list_of_keys = [k for k, v in value.items()]
-        if list_of_keys[0] != "1" or list_of_keys[1] != "2" or list_of_keys[2] != "3" or list_of_keys[3] != "4":
-            return None
-        d=float(value[4][0])
-        m=float(value[4][1])
-        s=float(value[4][2])
-        return d + (m / 60.0) + (s / 3600.0)
+    if "GPSInfo" not in data:
+        return None
+    gps_info = data["GPSInfo"]
+    if 4 not in gps_info or 3 not in gps_info:
+        return None
+    value=gps_info[4]
+    ref=gps_info[3]
+    if all(v == v for v in value):
+        d=float(value[0])
+        m=float(value[1])
+        s=float(value[2])
+        lon = d + (m / 60.0) + (s / 3600.0)
+        return -lon if ref == "W" else lon
     return None
 
 def datatime(data: dict):
@@ -102,7 +110,3 @@ def extract_all(folder_path):
         exif_dict=extract_metadata(file)
         list_of_dicts.append(exif_dict)
     return list_of_dicts
-
-
-# x=extract_all("sample_data")
-# print(x)
