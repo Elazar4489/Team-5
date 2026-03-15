@@ -1,7 +1,4 @@
 from datetime import datetime
-from extractor import extract_all
-from map_view import create_map
-from analyzer import analyze
 
 def create_report(images_data, map_html, timeline_html, analysis):
     now = datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -87,21 +84,3 @@ def create_report(images_data, map_html, timeline_html, analysis):
     """
 
     return html
-
-
-# מפה נועד בשביל הבדיקה שאני עשיתי
-if __name__ == "__main__":
-
-    import map_view,extractor,analyzer,timeline
-    folder_path = r"C:\Users\EHRE14\PycharmProjects\Team-5\images\ready"
-    real_images_data = extractor.extract_all(folder_path)
-    real_map_html = map_view.create_map(real_images_data)
-    analysis = analyzer.analyze(extractor.extract_all(folder_path))
-    real_timeline = timeline.create_timeline(extractor.extract_all(folder_path))
-
-    html_output = create_report(real_images_data, real_map_html, real_timeline, analysis)
-
-    with open("report.html", "w", encoding="utf-8") as f:
-        f.write(html_output)
-
-    print("קובץ הבדיקה נוצר! פתח את report.html בדפדפן שלך.")
